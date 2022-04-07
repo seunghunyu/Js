@@ -1,4 +1,5 @@
-function RealEasyFilter(id) {
+
+ function RealEasyFilter(id) {
     this.id = id;
     this.ctl;
     var Data;
@@ -11,15 +12,17 @@ function RealEasyFilter(id) {
         searchTag.setAttribute('id','search');
         searchTag.setAttribute('class','div_search');
         searchTag.setAttribute('style','border : 1px');
+    
         
 
         let search_textTag = document.createElement('input');
         search_textTag.setAttribute('id','search_textTag');
         search_textTag.setAttribute('class','search_textTag');
         search_textTag.setAttribute('type','text');
+        search_textTag.setAttribute('autocomplete','off');
         search_textTag.setAttribute('placeholder','검색어를 입력해주세요.');
         //search_textTag.setAttribute('maxlength','10');
-        search_textTag.setAttribute('style','heigth : 35px; width : 95%');
+        search_textTag.setAttribute('style','width : 95%;height : 25px');
         search_textTag.onkeyup = function(){
             if (window.event.keyCode == 13) {
                 // 엔터키가 눌렸을 때
@@ -75,7 +78,7 @@ function RealEasyFilter(id) {
         let tr1 = document.createElement('tr');
         let td1 = document.createElement('td');
         td1.setAttribute('colspan','2');
-        td1.setAttribute('style','border-right : 0px; border-bottom : 0px');
+        td1.setAttribute('style','border-right : 0px; border-bottom : 0px; height : 30px');
         td1.appendChild(searchTag);
         
         let td3 = document.createElement('td');
@@ -160,7 +163,11 @@ function RealEasyFilter(id) {
                 let tbody_trTag    = document.createElement('tr');
                 tbody_trTag.setAttribute('id','tbody_trTag'+Data[i].ITEM_INFO[j].ITEM_NM);
                 tbody_trTag.setAttribute('class','tbody_trTag');    
-
+                /*
+                let tbody_tdTag    = document.createElement('td');
+                tbody_tdTag.setAttribute('id','tbody_tdTag'+Data[i].ITEM_INFO[j].ITEM_NM);
+                tbody_tdTag.setAttribute('class','tbody_tdTag');    
+                */
                 /**
                  * <tbody>
                  *  <tr>
@@ -193,6 +200,7 @@ function RealEasyFilter(id) {
                 tbody_trTag.appendChild(td_More);
                 
                 let td_Icon;
+                
                 let conTag;
                 switch(Data[i].ITEM_INFO[j].CON_TYPE){
 
@@ -200,16 +208,19 @@ function RealEasyFilter(id) {
                     case '001': //text
                         conTag = document.createElement('input');
                         conTag.setAttribute('type','text');
-                        conTag.setAttribute('maxlength','10');
+                        conTag.setAttribute('autocomplete','off');
+                        //conTag.setAttribute('maxlength','10');
                         conTag.setAttribute('id', 'text');
                         conTag.setAttribute('class','td_text');
-                        conTag.setAttribute('style','width : 90% ; height : 25px');
+                        conTag.setAttribute('style','width : 90% ; height : 20px');
                         break;
                     case '002': //combobox
                         conTag = document.createElement('select');
                         conTag.setAttribute('id', 'combobox');    
                         conTag.setAttribute('class','td_combobox');
                         conTag.setAttribute('style','width : 90% ; height : 25px');
+                        Data[i].ITEM_INFO[j].CODE_LIST = '%,'+Data[i].ITEM_INFO[j].CODE_LIST
+                        Data[i].ITEM_INFO[j].VALUE_LIST = '선택,'+Data[i].ITEM_INFO[j].VALUE_LIST
                         var codeArr = Data[i].ITEM_INFO[j].CODE_LIST.split(',');
                         var valArr = Data[i].ITEM_INFO[j].VALUE_LIST.split(',');
                     
@@ -293,15 +304,26 @@ function RealEasyFilter(id) {
 
                 }
                 
-                //conTag.innerHTML = Data[i].ITEM_INFO[j].CON_TYPE;
+                if(td_Icon !== undefined){
+                    td_Icon.onclick = function(){
+                        //$('#'+'tbody'+Data[i].TASK_BRCH).show();
+                        //console.log(this.id);
+                        obz.setPageParam('ITEM_NM', this.id.substring('td_Icon'.length));
+                        obz.openDialogNew(instance, '', obz.getFrameURL('/managebaseserver/webframes/jcomponent/design/codesearch'), setCodeSearchData, false);
+                        
+                    };
+                }
                 
                 td_conTag.appendChild(conTag);
 
             }   
-        }
+        }//end for
         
     };//init end
-   
+    
+    function setCodeSearchData(e){
+        console.log('setCodeSearchData');
+    }
    
     this.setFoldering = function(){
         console.log('a');
@@ -311,22 +333,37 @@ function RealEasyFilter(id) {
         //최종선택값들의 데이터 리스트
         var selDataList = new Array();
 
-                // item 리스트 조합 초기화
+        //item 리스트 조합 초기화
         var itemTagArr = $('.itemTag');
+        var itemIdArr = [];
         var itemArr = [];
+        var itemTypeArr = [];
         // 사용자 입력 항목 리스트 조합 초기화
         var conTagArr = $('.td_conTag');
         var conTagVal = [];
         //item 리스트 추출
+        
+        var AllData = this.Data;
+        for(var i = 0 ; i < AllData.length ; i ++){
+            for(var j = 0 ; j < AllData[i].ITEM_INFO.length ; j++){
+                itemIdArr.push(AllData[i].ITEM_INFO[j].ITEM_ID);
+                itemArr.push(AllData[i].ITEM_INFO[j].ITEM_NM);
+                itemTypeArr.push(AllData[i].ITEM_INFO[j].ITEM_TYPE);
+            }   
+        }    
+        /*
         for(var i = 0; i < itemTagArr.length ; i++){
             itemArr.push(itemTagArr[i].innerHTML);
-        }
+        }*/
         
         //컨트롤 타입이 무엇인지 text,combo,radio,.. 
         //$('.td_conTag')[0].id.substring($('.td_conTag')[0].id.length,$('.td_conTag')[0].id.length-3)  
         for(var i = 0 ; i < conTagArr.length ; i++){
             
             var data = new Object(); 
+            //타입 세팅(STRING,NUMERIC)
+            data.type = itemTypeArr[i];
+            data.id   = itemIdArr[i];
 
             var tagId = $('.td_conTag')[i].id;
             switch(tagId.substring(tagId.length,tagId.length-3)){
@@ -343,7 +380,7 @@ function RealEasyFilter(id) {
                 case '002'://combobox
                     conTagVal.push($('.td_conTag')[i].children[0].value);
 
-                    if($('.td_conTag')[i].children[0].value !== ''){
+                    if($('.td_conTag')[i].children[0].value !== '' && $('.td_conTag')[i].children[0].value !== '%'){
                         data.item = itemArr[i];
                         data.val  = $('.td_conTag')[i].children[0].value;
                         selDataList.push(data);
@@ -413,22 +450,182 @@ function RealEasyFilter(id) {
         return selDataList;
 
     }
+    
+    this.settingFilterCode = function(itemList , valList){
+        console.log("sel itemList :::::::::::" +itemList);
+      console.log("sel valList ::::::::::: " +valList);
 
-    this.getRuleCode = function(){
+        var pmpt_ItemArr;
+        var pmpt_ValArr;
+        
+        if(itemList.length > 0){
+            pmpt_ItemArr = itemList.split(';');
+            pmpt_ValArr  = valList.split(';');
+            var selDataList = new Array();
+
+            //item 리스트 조합 초기화
+            var itemTagArr = $('.itemTag');
+            var itemArr = [];
+            // 사용자 입력 항목 리스트 조합 초기화
+            var conTagArr = $('.td_conTag');
+            var conTagVal = [];
+            //item 리스트 추출
+            for(var i = 0; i < itemTagArr.length ; i++){
+                itemArr.push(itemTagArr[i].innerHTML);
+            }
+            
+            //컨트롤 타입이 무엇인지 text,combo,radio,.. 
+            //$('.td_conTag')[0].id.substring($('.td_conTag')[0].id.length,$('.td_conTag')[0].id.length-3)  
+            for(var i = 0 ; i < conTagArr.length ; i++){
+                
+                for(var k = 0 ; k < pmpt_ItemArr.length ; k++){
+                    if(itemArr[i] === pmpt_ItemArr[k]){
+                        var tagId = $('.td_conTag')[i].id;
+                        switch(tagId.substring(tagId.length,tagId.length-3)){
+                            case '001'://text
+                                $('.td_conTag')[i].children[0].value  = pmpt_ValArr[k];   
+                                break;
+                            case '002'://combobox
+                                $('.td_conTag')[i].children[0].value  = pmpt_ValArr[k];           
+                                break;    
+                            case '003'://checkgroup
+                                
+                                var checkVal = '';
+                                var parentTagId = $('.td_conTag')[i].id;
+                                var pmpt_check_ValArr = pmpt_ValArr[k].split(',');
+
+                                for(var j = 0 ; j <  $('#'+parentTagId).find('input').length ; j++){
+                                    console.log($('#'+parentTagId).find('input')[j].value);
+                                    
+                                    for(var h = 0 ; h < pmpt_check_ValArr.length ; h++){
+                                        if(pmpt_check_ValArr[h] === $('#'+parentTagId).find('input')[j].value){
+                                            $('#'+parentTagId).find('input')[j].checked = true;
+                                        }
+                                    }
+                                }
+                                
+                                break;
+                            case '004'://radiogroup
+                                
+                                var checkVal = '';
+                                var parentTagId = $('.td_conTag')[i].id;
+                        
+                                for(var j = 0 ; j <  $('#'+parentTagId).find('input').length ; j++){
+                                    console.log($('#'+parentTagId).find('input')[j].value);
+                                    if(pmpt_ValArr[k] === $('#'+parentTagId).find('input')[j].value){
+                                        $('#'+parentTagId).find('input')[j].checked = true;
+                                    }
+                                }
+                                
+                                break;
+                            case '005'://between
+                                /*
+                                conTagVal.push($('.td_conTag')[i].children[0].value);
+                                if($('.td_conTag')[i].children[0].value !== ''){
+                                    data.item = itemArr[i];
+                                    data.val  = $('.td_conTag')[i].children[0].value;
+                                    selDataList.push(data);
+                                }*/
+                                break;
+                        }   
+                    }else{continue;}
+                }
+            }    
+
+
+        }else{
+            console.log("설정된 아이템이 없습니다.")
+        }
+
+
+    }
+
+
+    this.getRuleCode = function(type){
         var operator = '&&'; //임시 
         var ruleObj = this.getSelectedData();
+        
         var codeData = 'if(';
+        var xmlData  = '<List>';
+        var htmlData = 'IF('; 
+
         for(var i = 0 ; i < ruleObj.length ; i++){
+            var tempCode = '';
+            var tempXml = '';
+            var tempHtml = '';
+            
+            tempXml = "<EasySheet>"
+                      + "<LogicOperator operator=\"\" LastCondidx=\"1\">"
+                      + "<Condition operator=\"=\" groupstart=\"False\" groupend=\"False\" groupoperator=\"\" isgroup=\"False\" NothingCond=\"0\" LastCond=\"1\">"
+                      + "<Inputlist><RefItem name=\""+ruleObj[i].item+"\" id=\""+ruleObj[i].id+"\" itemtype=\""+ruleObj[i].type+"\"/></Inputlist>"
+                      + "<equation caption=\"0\"><![CDATA[{"+ruleObj[i].item+"}]]></equation>"
+                      + "<valuation><![CDATA[\""+ruleObj[i].val+"\"]]></valuation>";
 
+            
 
-            var tempCode = '(get(\"' + ruleObj[i].item + '\").compareTo(\"'+ruleObj[i].val+'\") == 0)';
+            if(ruleObj[i].type === 'STRING'){
+                if(ruleObj[i].val.split(',').length > 1){
+                    tempCode = '(obzFunction.operatorIN(get(\"'+ ruleObj[i].item + '\"),\"'+ ruleObj[i].val +'\"))';
+                    tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"),\""+ruleObj[i].val+"\"))]]></value>";
+                    tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].val + ") <br> AND";
+                }else{
+                    tempCode = '(get(\"' + ruleObj[i].item + '\").compareTo(\"'+ruleObj[i].val+'\") == 0)';
+                    tempXml += "<value><![CDATA[((get(\""+ruleObj[i].item+"\").compareTo(\""+ruleObj[i].val+"\")) == 0)]]></value>";
+                    tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].val + " <br> AND";
+                }
+            }else{//NUMERIC
+                if(ruleObj[i].val.split(',').length > 1){
+                    /*
+                    var tempArr = ruleObj[i].val.split(',');               
+                    var tempVal = ''; 
+                    for(var j = 0 ; j < tempArr.length ; j++){
+                        tempVal += tempArr[j]+'d' + ',';
+                    }
+                    tempVal = tempVal.substring(0,tempVal.length-1);
+                    tempCode = '(Double.parseDouble(get(\"' + ruleObj[i].item + '\")) == (' + tempVal + '))';
+                    */
+                    tempCode = '(obzFunction.operatorIN(get(\"'+ ruleObj[i].item + '\"),\"'+ ruleObj[i].val +'\"))';
+                    tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"),\""+ruleObj[i].val+"\"))]]></value>";
+                    //tempCode = '(Double.parseDouble(get(\"' + ruleObj[i].item + '\")) == ('+ruleObj[i].val+'d))';
+                    tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].val + ") <br> AND";
+                }else{
+                    tempCode = '(Double.parseDouble(get(\"' + ruleObj[i].item + '\")) == ('+ruleObj[i].val+'d))';
+                    tempXml += "<value><![CDATA[(Double.parseDouble(get(\""+ruleObj[i].item+"\")) == ("+ruleObj[i].val+"d))]]></value>";
+                    tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].val + " <br> AND";
+                }
+            }
             codeData += tempCode + '&&';
+            xmlData  += tempXml + "</Condition></LogicOperator><RuleThen></RuleThen><Desc><![CDATA[]]></Desc></EasySheet>";
+            htmlData += tempHtml 
         }
         codeData = codeData.substring(0,codeData.length-2);
-        codeData += '){return true;}';
+        //codeData += '){return true;}';
+        codeData += '){}else{return false;}';
 
-        return codeData;
+        
+        xmlData += "<EasyInfo actioncnt=\"0\" conditioncnt=\"1\" rowcnt=\""+String(ruleObj.length)+"\" Multi=\"S\"  NullExType=\"0\" ISFILTER=\"1\" OPERATOR=\"AND\"/>"
+        xmlData += "<Array><text><![CDATA[]]></text><item><![CDATA[]]></item></Array><GroupInfo><![CDATA[]]></GroupInfo><FormulaInfo><![CDATA[]]></FormulaInfo></List>";
+        
+        htmlData = htmlData.substring(0,htmlData.length-3) + ")";
+        
+
+
+
+        if(type === 'code'){
+            console.log("code : " + codeData);
+            return codeData;
+        }else if(type === 'xml'){
+            console.log("xml : " + xmlData);
+            return xmlData;
+        }else{
+            console.log("html : " + htmlData);
+            return htmlData;
+        }
     }
+
+    
+
+
 
     //DOM 로그 이전 호출하면 에러
     function showList(){
