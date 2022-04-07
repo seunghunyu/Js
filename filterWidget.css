@@ -1,0 +1,61 @@
+.EasyFilterTable .theadTag .trTag {
+   
+    background-color: #3A5F86;  
+    height: 30px;
+    font-weight: bold;
+    border-bottom: 1px solid #bbb;
+}
+
+
+.EasyFilterTable
+{
+    border-spacing : 0px;
+    width : 700px;
+    border-color : #ccc;
+}
+
+
+.EasyFilterTable .itemTag
+{
+    border-right: 1px solid #ccc;
+    border-left : 0px;
+    border-bottom : 0px;
+   
+   
+}
+
+.itemTag{
+   height : 30px; 
+   padding-left : 10px;
+}
+
+ 
+.taskTag, .dx-icon dx-icon-search{
+   cursor : pointer;  
+}
+
+.taskTag{
+   border-left : 0px;
+   border-right : 0px;
+   border-bottom : 0px;   
+   padding-left : 10px;
+   color : #EAEAEA
+}
+
+.RealEasyFilter > *{
+
+   font-family: Malgun Gothic;
+}
+
+.td_conTag{
+   width : 500px;
+
+}
+
+.td_More{
+   width : 30px;
+   padding-left : 10px;
+   border-left : 0px;
+   border-right : 0px; 
+   border-bottom : 0px
+}
