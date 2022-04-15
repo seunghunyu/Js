@@ -6,6 +6,7 @@
 
     
     this.init = function() {
+        $('table').remove();
         this.ctl = document.getElementById(id);
         //var jobj = JSON.parse(Data);
         let searchTag = document.createElement('div');
@@ -203,8 +204,6 @@
                 
                 let conTag;
                 switch(Data[i].ITEM_INFO[j].CON_TYPE){
-
-
                     case '001': //text
                         conTag = document.createElement('input');
                         conTag.setAttribute('type','text');
@@ -309,7 +308,7 @@
                         //$('#'+'tbody'+Data[i].TASK_BRCH).show();
                         //console.log(this.id);
                         obz.setPageParam('ITEM_NM', this.id.substring('td_Icon'.length));
-                        obz.openDialogNew(instance, '', obz.getFrameURL('/managebaseserver/webframes/jcomponent/design/codesearch'), setCodeSearchData, false);
+                        obz.openDialogNew(instance, '', obz.getFrameURL('/managebaseserver/webframes/jcomponent/design/codesearch'), 'setCodeSearchData', false);
                         
                     };
                 }
@@ -321,9 +320,7 @@
         
     };//init end
     
-    function setCodeSearchData(e){
-        console.log('setCodeSearchData');
-    }
+    
    
     this.setFoldering = function(){
         console.log('a');
@@ -479,7 +476,7 @@
             for(var i = 0 ; i < conTagArr.length ; i++){
                 
                 for(var k = 0 ; k < pmpt_ItemArr.length ; k++){
-                    if(itemArr[i] === pmpt_ItemArr[k]){
+                    if(itemArr[i]+'_PMPT' === pmpt_ItemArr[k]){
                         var tagId = $('.td_conTag')[i].id;
                         switch(tagId.substring(tagId.length,tagId.length-3)){
                             case '001'://text
@@ -540,14 +537,14 @@
 
     }
 
-
+    //2022.04.04 하나의 룰 생성
     this.getRuleCode = function(type){
         var operator = '&&'; //임시 
         var ruleObj = this.getSelectedData();
         
         var codeData = 'if(';
         var xmlData  = '<List>';
-        var htmlData = 'IF('; 
+        var htmlData = 'IF(';  
 
         for(var i = 0 ; i < ruleObj.length ; i++){
             var tempCode = '';
@@ -557,24 +554,25 @@
             tempXml = "<EasySheet>"
                       + "<LogicOperator operator=\"\" LastCondidx=\"1\">"
                       + "<Condition operator=\"=\" groupstart=\"False\" groupend=\"False\" groupoperator=\"\" isgroup=\"False\" NothingCond=\"0\" LastCond=\"1\">"
-                      + "<Inputlist><RefItem name=\""+ruleObj[i].item+"\" id=\""+ruleObj[i].id+"\" itemtype=\""+ruleObj[i].type+"\"/></Inputlist>"
+                      + "<Inputlist><RefItem name=\""+ruleObj[i].item+"\" id=\""+ruleObj[i].id+"\" itemtype=\""+ruleObj[i].type+"\"/>"
+                      + "<RefItem name=\""+ruleObj[i].item+"_PMPT\" id=\""+ruleObj[i].id+"\" itemtype=\""+ruleObj[i].type+"\"/></Inputlist>"
                       + "<equation caption=\"0\"><![CDATA[{"+ruleObj[i].item+"}]]></equation>"
-                      + "<valuation><![CDATA[\""+ruleObj[i].val+"\"]]></valuation>";
+                      + "<valuation><![CDATA[\""+ruleObj[i].item+"_PMPT\"]]></valuation>";
 
             
 
             if(ruleObj[i].type === 'STRING'){
-                if(ruleObj[i].val.split(',').length > 1){
-                    tempCode = '(obzFunction.operatorIN(get(\"'+ ruleObj[i].item + '\"),\"'+ ruleObj[i].val +'\"))';
-                    tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"),\""+ruleObj[i].val+"\"))]]></value>";
-                    tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].val + ") <br> AND";
-                }else{
-                    tempCode = '(get(\"' + ruleObj[i].item + '\").compareTo(\"'+ruleObj[i].val+'\") == 0)';
-                    tempXml += "<value><![CDATA[((get(\""+ruleObj[i].item+"\").compareTo(\""+ruleObj[i].val+"\")) == 0)]]></value>";
-                    tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].val + " <br> AND";
+                if(ruleObj[i].val.split(',').length > 1){ //복수개 
+                    tempCode = '(obzFunction.operatorIN(get(\"'+ ruleObj[i].item + '\"),  get(\"'+ ruleObj[i].item +'_PMPT\"+)))';
+                    tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"),  get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
+                    tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
+                }else{                
+                    tempCode = '(get(\"' + ruleObj[i].item + '\").compareTo(get(\"'+ruleObj[i].item+'_PMPT\")) == 0)';
+                    tempXml += "<value><![CDATA[((get(\""+ruleObj[i].item+"\").compareTo(get(\""+ruleObj[i].item+"_PMPT\"))) == 0)]]></value>";
+                    tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
                 }
             }else{//NUMERIC
-                if(ruleObj[i].val.split(',').length > 1){
+                if(ruleObj[i].val.split(',').length > 1){ //복수개
                     /*
                     var tempArr = ruleObj[i].val.split(',');               
                     var tempVal = ''; 
@@ -584,14 +582,15 @@
                     tempVal = tempVal.substring(0,tempVal.length-1);
                     tempCode = '(Double.parseDouble(get(\"' + ruleObj[i].item + '\")) == (' + tempVal + '))';
                     */
-                    tempCode = '(obzFunction.operatorIN(get(\"'+ ruleObj[i].item + '\"),\"'+ ruleObj[i].val +'\"))';
-                    tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"),\""+ruleObj[i].val+"\"))]]></value>";
+                    tempCode = '(obzFunction.operatorIN(get(\"'+ ruleObj[i].item + '\"), get(\"'+ ruleObj[i].item +'_PMPT\")))';
+                    tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"), get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
                     //tempCode = '(Double.parseDouble(get(\"' + ruleObj[i].item + '\")) == ('+ruleObj[i].val+'d))';
-                    tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].val + ") <br> AND";
+                    tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
                 }else{
-                    tempCode = '(Double.parseDouble(get(\"' + ruleObj[i].item + '\")) == ('+ruleObj[i].val+'d))';
-                    tempXml += "<value><![CDATA[(Double.parseDouble(get(\""+ruleObj[i].item+"\")) == ("+ruleObj[i].val+"d))]]></value>";
-                    tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].val + " <br> AND";
+                    tempCode = "if(get\""+ ruleObj[i].item + "\").equals(\"\") set(\""+ ruleObj[i].item + "_PMPT\", \"0\");"  
+                             + "(Double.parseDouble(get(\"" + ruleObj[i].item + "_PMPT\")) == (Double.parseDouble(get\""+ruleObj[i].item+"_PMPT\"))))";
+                    tempXml  += "<value><![CDATA[(Double.parseDouble(get(\""+ruleObj[i].item+"\")) == (Double.parseDouble(get(\""+ruleObj[i].item+"_PMPT\"))))]]></value>";
+                    tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
                 }
             }
             codeData += tempCode + '&&';
@@ -603,7 +602,7 @@
         codeData += '){}else{return false;}';
 
         
-        xmlData += "<EasyInfo actioncnt=\"0\" conditioncnt=\"1\" rowcnt=\""+String(ruleObj.length)+"\" Multi=\"S\"  NullExType=\"0\" ISFILTER=\"1\" OPERATOR=\"AND\"/>"
+        xmlData += "<EasyInfo actioncnt=\"0\" conditioncnt=\"1\" rowcnt=\""+String(ruleObj.length+1)+"\" Multi=\"S\"  NullExType=\"0\" ISFILTER=\"1\" OPERATOR=\"AND\"/>"
         xmlData += "<Array><text><![CDATA[]]></text><item><![CDATA[]]></item></Array><GroupInfo><![CDATA[]]></GroupInfo><FormulaInfo><![CDATA[]]></FormulaInfo></List>";
         
         htmlData = htmlData.substring(0,htmlData.length-3) + ")";
@@ -623,9 +622,234 @@
         }
     }
 
-    
+    //2022.04.13 개별 등록 -> 컴포넌트 한개당 룰 여러개 생성   
+    this.getRuleCode2 = function(type,item_nm){
+        var operator = '&&'; //임시 
+        var ruleObj = this.getSelectedData();
+        
+        var codeData = 'if(';
+        var xmlData  = '<List>';
+        var htmlData = 'IF(';  
+        
+        var tempCode = '';
+        var tempXml  = '';
+        var tempHtml = '';
+        
+        var item_id   = '';
+        var item_type = '';
+        var item_val  = '';
+        //아이템 아이디 추출
+        for(var i = 0 ; i < ruleObj.length ; i++){
+            if(ruleObj[i].item === item_nm){
+                item_id   = ruleObj[i].id;
+                item_type = ruleObj[i].type;
+                item_val  = ruleObj[i].val;
+                break;
+            }    
+        }   
+        tempXml = "<EasySheet>"
+                   + "<LogicOperator operator=\"\" LastCondidx=\"1\">"
+                   + "<Condition operator=\"=\" groupstart=\"False\" groupend=\"False\" groupoperator=\"\" isgroup=\"False\" NothingCond=\"0\" LastCond=\"1\">"
+                   + "<Inputlist><RefItem name=\"" + item_nm + "\" id=\"" + item_id + "\" itemtype=\"" + item_type + "\"/>"
+                   + "<RefItem name=\"" + item_nm + "_PMPT\" id=\"" + item_id + "\" itemtype=\"" + item_type + "\"/></Inputlist>"
+                   + "<equation caption=\"0\"><![CDATA[{" + item_nm + "}]]></equation>"
+                   + "<valuation><![CDATA[\""+item_nm+"_PMPT\"]]></valuation>";
+       
+        if(item_type === 'STRING'){
+            if(ruleObj[i].val.split(',').length > 1){ //복수개 
+                tempCode = '(obzFunction.operatorIN(get(\"' + item_nm + '\"),  get(\"' + item_nm + '_PMPT\"+)))';
+                tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\"" + item_nm + "\"),  get(\"" + item_nm + "_PMPT\")))]]></value>";
+                tempHtml = "{"+ item_nm + "} IN (" + item_nm + "_PMPT) <br> AND";
+            }else{                
+                tempCode = '(get(\"' + item_nm + '\").compareTo(get(\"' + item_nm + '_PMPT\")) == 0)';
+                tempXml += "<value><![CDATA[((get(\"" + item_nm + "\").compareTo(get(\"" + item_nm + "_PMPT\"))) == 0)]]></value>";
+                tempHtml = "{" + item_nm + "} = " + item_nm + "_PMPT <br> AND";
+            }
+        }else{//NUMERIC
+            if(ruleObj[i].val.split(',').length > 1){ //복수개
+                tempCode = '(obzFunction.operatorIN(get(\"'+ item_nm + '\"), get(\"'+ item_nm +'_PMPT\")))';
+                tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\"" + item_nm + "\"), get(\"" + item_nm + "_PMPT\")))]]></value>";
+                tempHtml = "{" + item_nm + "} IN (" + item_nm + "_PMPT) <br> AND";
+            }else{  
+                tempCode = "(Double.parseDouble(get(\"" + item_nm + "_PMPT\")) == (Double.parseDouble(get(\"" + item_nm + "_PMPT\"))))";
+                tempXml  += "<value><![CDATA[(Double.parseDouble(get(\"" + item_nm + "\")) == (Double.parseDouble(get(\"" + item_nm + "_PMPT\"))))]]></value>";
+                tempHtml = "{" + item_nm + "} = " + item_nm + "_PMPT <br> AND";
+            }
+        }
+        codeData += tempCode + '&&';
+
+        //NUMERIC 타입일경우 null 체크 필요
+        if(item_type === 'NUMERIC'){
+            codeData = "if(get(\"" + item_nm + "\").equals(\"\")) set(\"" + item_nm + "_PMPT\", \"0\"); " +  codeData;
+        }
+        
+
+        xmlData  += tempXml + "</Condition></LogicOperator><RuleThen></RuleThen><Desc><![CDATA[]]></Desc></EasySheet>";
+        htmlData += tempHtml 
+        
+        codeData = codeData.substring(0,codeData.length-2);
+        //codeData += '){return true;}';
+        codeData += '){}else{return false;}';
+
+        
+        xmlData += "<EasyInfo actioncnt=\"0\" conditioncnt=\"1\" rowcnt=\""+String(ruleObj.length+1)+"\" Multi=\"S\"  NullExType=\"0\" ISFILTER=\"1\" OPERATOR=\"AND\"/>"
+        xmlData += "<Array><text><![CDATA[]]></text><item><![CDATA[]]></item></Array><GroupInfo><![CDATA[]]></GroupInfo><FormulaInfo><![CDATA[]]></FormulaInfo></List>";
+        
+        htmlData = htmlData.substring(0,htmlData.length-3) + ")";
+        
 
 
+
+        if(type === 'code'){
+            console.log("code : " + codeData);
+            return codeData;
+        }else if(type === 'xml'){
+            console.log("xml : " + xmlData);
+            return xmlData;
+        }else{
+            console.log("html : " + htmlData);
+            return htmlData;
+        }
+    }
+
+    //2022.04.13 세트로 묶기 (ex :  {아이템 : 상권코드;상권코드_PMPT , 코드 : if(get("상권코드").compareTo(get("상권코드_PMPT"))){}else{return false;}   } 
+    this.getRuleCode3 = function(type){
+        var operator = '&&'; //임시 
+        var ruleObj = this.getSelectedData();
+        
+        var jexlCode = " import org.apache.commons.jexl2.*;"
+                     + " import java.util.Map;"
+                     + " import java.util.HashMap;"
+                     + " import java.util.Iterator;"
+                     + " !@#!@#!@# "       //import문과 코드 부문 구분
+                     + " Map<String,String> codeMap = new HashMap<String,String>(); "
+                     + " String tempCode = \"\"; ";
+
+        var codeData = '';
+        var xmlData  = '<List>';
+        var htmlData = 'IF(';  
+
+        for(var i = 0 ; i < ruleObj.length ; i++){
+            var tempCode = '';
+            var tempXml = '';
+            var tempHtml = '';
+            codeData = '';
+
+
+            tempXml = "<EasySheet>"
+                      + "<LogicOperator operator=\"\" LastCondidx=\"1\">"
+                      + "<Condition operator=\"=\" groupstart=\"False\" groupend=\"False\" groupoperator=\"\" isgroup=\"False\" NothingCond=\"0\" LastCond=\"1\">"
+                      + "<Inputlist><RefItem name=\""+ruleObj[i].item+"\" id=\""+ruleObj[i].id+"\" itemtype=\""+ruleObj[i].type+"\"/>"
+                      + "<RefItem name=\""+ruleObj[i].item+"_PMPT\" id=\""+ruleObj[i].id+"\" itemtype=\""+ruleObj[i].type+"\"/></Inputlist>"
+                      + "<equation caption=\"0\"><![CDATA[{"+ruleObj[i].item+"}]]></equation>"
+                      + "<valuation><![CDATA[\""+ruleObj[i].item+"_PMPT\"]]></valuation>";
+            
+            if(ruleObj[i].type === 'STRING'){
+                   if(ruleObj[i].val.split(',').length > 1){ //복수개 
+                       tempCode = 'if((obzFunction.operatorIN('+ruleObj[i].item +'),'+ ruleObj[i].item +'_PMPT))';
+                       tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"),  get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
+                       tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
+                   }else{                
+                       tempCode = 'if(('+ ruleObj[i].item +'.compareTo('+ruleObj[i].item+'_PMPT) == 0)';
+                       tempXml += "<value><![CDATA[((get(\""+ruleObj[i].item+"\").compareTo(get(\""+ruleObj[i].item+"_PMPT\"))) == 0)]]></value>";
+                       tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
+                   }
+               }else{//NUMERIC
+                   if(ruleObj[i].val.split(',').length > 1){ //복수개
+                       tempCode = 'if((obzFunction.operatorIN('+ ruleObj[i].item + ', '+ ruleObj[i].item +'_PMPT))';
+                       tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"), get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
+                       tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
+                   }else{
+                       tempCode = "if(("+ ruleObj[i].item + ".equals(\"\") ) set("+ ruleObj[i].item + "_PMPT, \"0\");"  
+                                + "if((Double.parseDouble(" + ruleObj[i].item + "_PMPT) == (Double.parseDouble("+ruleObj[i].item+"_PMPT))";
+                       tempXml  += "<value><![CDATA[(Double.parseDouble(get(\""+ruleObj[i].item+"\")) == (Double.parseDouble(get(\""+ruleObj[i].item+"_PMPT\"))))]]></value>";
+                       tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
+                   }
+            }
+            /*
+            if(ruleObj[i].type === 'STRING'){
+                if(ruleObj[i].val.split(',').length > 1){ //복수개 
+                    tempCode = 'if((obzFunction.operatorIN(get(\"'+ruleObj[i].item +'\")), get(\"'+ ruleObj[i].item +'_PMPT\")))';
+                    tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"),  get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
+                    tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
+                }else{                
+                    tempCode = 'if((get(\\\"'+ ruleObj[i].item +'\\\").compareTo(get(\\\"'+ruleObj[i].item+'_PMPT\\\")) == 0)';
+                    tempXml += "<value><![CDATA[((get(\""+ruleObj[i].item+"\").compareTo(get(\""+ruleObj[i].item+"_PMPT\"))) == 0)]]></value>";
+                    tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
+                }
+            }else{//NUMERIC
+                if(ruleObj[i].val.split(',').length > 1){ //복수개
+                    tempCode = 'if((obzFunction.operatorIN(get(\"'+ ruleObj[i].item + '\"), get(\"'+ ruleObj[i].item +'_PMPT\")))';
+                    tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"), get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
+                    tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
+                }else{
+                    tempCode = "if((get(\""+ ruleObj[i].item + "\").equals(\"\") ) set("+ ruleObj[i].item + "_PMPT, \"0\");"  
+                             + "if((Double.parseDouble(get(\"" + ruleObj[i].item + "\")) == (Double.parseDouble(get(\""+ruleObj[i].item+"_PMPT\")))";
+                    tempXml  += "<value><![CDATA[(Double.parseDouble(get(\""+ruleObj[i].item+"\")) == (Double.parseDouble(get(\""+ruleObj[i].item+"_PMPT\"))))]]></value>";
+                    tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
+                }
+            }*/
+            codeData += tempCode + '){}else{return false;}';
+            xmlData  += tempXml + "</Condition></LogicOperator><RuleThen></RuleThen><Desc><![CDATA[]]></Desc></EasySheet>";
+            htmlData += tempHtml 
+
+            /*
+            jexlCode += " String tempCode = \""+ codeData + "\";";
+            jexlCode += " tempCode = tempCode.replaceFirst(\""+ ruleObj[i].item +"\", \"get(\""+ ruleObj[i].item +"\")\" );";
+            jexlCode += " tempCode = tempCode.replace(\""+ ruleObj[i].item +"_PMPT\", \"get(\""+ ruleObj[i].item +"_PMPT\")\" );";                
+            jexlCode += " codeMap.put(\""+ruleObj[i].item+"\", tempCode); ";
+            */
+
+            jexlCode += " tempCode = \""+codeData+"\"; ";
+            //var temp = "true";
+            //jexlCode += " tempCode = \""+temp+"\"; ";
+            jexlCode += " codeMap.put(\""+ruleObj[i].item+"\",tempCode); ";
+        }
+
+        jexlCode += " Iterator it = codeMap.entrySet().iterator(); "
+                 +  " while(it.hasNext()){"
+                 +  " Map.Entry<String, String> entry = (Map.Entry)it.next(); "
+                 //+  " //entry.getKey() , entry.getValue() " 
+                 
+
+        jexlCode += " JexlEngine jexl = new JexlEngine(); "
+                  + " String jexlExp = codeMap.get(entry.getKey()); "
+                  //+ " __wlog.info_println(\"jexelEXP::::::::::::::::::::::::::\" + jexlExp); "
+                  + " System.out.println(\"jexelEXP::::::::::::::::::::::::::\" + jexlExp); "
+                  + " Expression e = jexl.createExpression( jexlExp ); "
+                  + " JexlContext jc = new MapContext(); "
+                  + " String param = entry.getKey(); "
+                  + " String param_pmpt = entry.getKey()+\"_PMPT\";"
+                  + " String data1 = get(param);"
+                  + " String data2 = get(param_pmpt);"
+                  + " jc.set(param, data1); "
+                  + " jc.set(param_pmpt, data2); "
+                  + " if((Boolean)e.evaluate(jc) == false){ System.out.println(\"@@@@@@@@@@@@@@@@@@false\"); return false;}else{ System.out.println(\"@@@@@@@@@@@@@@@@@@@@@true\"); return true; } "
+                  //+ " if((Boolean)e.evaluate(jc) == false){return false; }else{ } "
+                  +  "  } ";
+
+        console.log(jexlCode);
+
+        
+        xmlData += "<EasyInfo actioncnt=\"0\" conditioncnt=\"1\" rowcnt=\""+String(ruleObj.length+1)+"\" Multi=\"S\"  NullExType=\"0\" ISFILTER=\"1\" OPERATOR=\"AND\"/>"
+        xmlData += "<Array><text><![CDATA[]]></text><item><![CDATA[]]></item></Array><GroupInfo><![CDATA[]]></GroupInfo><FormulaInfo><![CDATA[]]></FormulaInfo></List>";
+        
+        htmlData = htmlData.substring(0,htmlData.length-3) + ")";
+        
+
+
+
+        if(type === 'code'){
+            console.log("code : " + jexlCode);
+            return jexlCode;
+        }else if(type === 'xml'){
+            console.log("xml : " + xmlData);
+            return xmlData;
+        }else{
+            console.log("html : " + htmlData);
+            return htmlData;
+        }
+    }
 
     //DOM 로그 이전 호출하면 에러
     function showList(){
@@ -659,4 +883,8 @@
         }
     });
    
+}
+
+function setCodeSearchData(e){
+    console.log('setCodeSearchData');
 }
