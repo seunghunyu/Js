@@ -101,20 +101,11 @@
             let theadTag = document.createElement('thead');
             theadTag.setAttribute('id', Data[i].TASK_BRCH);
             theadTag.setAttribute('class','theadTag');
-           // theadTag.innerHTML = (i+1).toString()+'.'+Data[i].TASK_BRCH;
+          
             //tr
             let trTag    = document.createElement('tr');
             trTag.setAttribute('id', 'tr'+Data[i].TASK_BRCH);
             trTag.setAttribute('class','trTag');
-            //trTag.innerHTML = (i+1).toString()+'.'+Data[i].TASK_BRCH;
-
-            //분류 태그 생성
-            /*
-            let taskTag = document.createElement('div');
-            taskTag.setAttribute('id',Data[i].TASK_BRCH);
-            taskTag.setAttribute('class','taskTag');
-            taskTag.innerHTML = (i+1).toString()+'.'+Data[i].TASK_BRCH;
-            */
             
             let taskTdTag = document.createElement('td');
             taskTdTag.setAttribute('id', Data[i].TASK_BRCH);
