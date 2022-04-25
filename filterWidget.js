@@ -155,11 +155,7 @@
                 let tbody_trTag    = document.createElement('tr');
                 tbody_trTag.setAttribute('id','tbody_trTag'+Data[i].ITEM_INFO[j].ITEM_NM);
                 tbody_trTag.setAttribute('class','tbody_trTag');    
-                /*
-                let tbody_tdTag    = document.createElement('td');
-                tbody_tdTag.setAttribute('id','tbody_tdTag'+Data[i].ITEM_INFO[j].ITEM_NM);
-                tbody_tdTag.setAttribute('class','tbody_tdTag');    
-                */
+                
                 /**
                  * <tbody>
                  *  <tr>
