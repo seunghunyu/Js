@@ -12,7 +12,7 @@
         let searchTag = document.createElement('div');
         searchTag.setAttribute('id','search');
         searchTag.setAttribute('class','div_search');
-        searchTag.setAttribute('style','border : 1px');
+        searchTag.setAttribute('style','border : 0px #e5e5e5 solid;');
     
         
 
@@ -23,7 +23,7 @@
         search_textTag.setAttribute('autocomplete','off');
         search_textTag.setAttribute('placeholder','검색어를 입력해주세요.');
         //search_textTag.setAttribute('maxlength','10');
-        search_textTag.setAttribute('style','width : 95%;height : 25px');
+        search_textTag.setAttribute('style','width : 100%; height : 20px; margin : 1px 1px 1px 1px; border : 1px #e5e5e5 solid;');
         search_textTag.onkeyup = function(){
             if (window.event.keyCode == 13) {
                 // 엔터키가 눌렸을 때
@@ -66,6 +66,7 @@
         tableTag.setAttribute('id','EasyFilterTable');
         tableTag.setAttribute('class', 'EasyFilterTable');
         tableTag.setAttribute('border', '1px');
+        tableTag.setAttribute('style', 'width : 100%;');
         
         let tbodyTag = document.createElement('tbody');
         let trTag    = document.createElement('tr');
@@ -79,12 +80,12 @@
         let tr1 = document.createElement('tr');
         let td1 = document.createElement('td');
         td1.setAttribute('colspan','2');
-        td1.setAttribute('style','border-right : 0px; border-bottom : 0px; height : 30px');
+        td1.setAttribute('style','border : 0px; ');
         td1.appendChild(searchTag);
         
         let td3 = document.createElement('td');
         td3.setAttribute('class','td_More');
-        td3.setAttribute('border-left','0px');
+        td3.setAttribute('style','border:0px;');
         td3.appendChild(itemSearch_Icon);
         
         tr1.appendChild(td1);
@@ -101,11 +102,20 @@
             let theadTag = document.createElement('thead');
             theadTag.setAttribute('id', Data[i].TASK_BRCH);
             theadTag.setAttribute('class','theadTag');
-          
+           // theadTag.innerHTML = (i+1).toString()+'.'+Data[i].TASK_BRCH;
             //tr
             let trTag    = document.createElement('tr');
             trTag.setAttribute('id', 'tr'+Data[i].TASK_BRCH);
             trTag.setAttribute('class','trTag');
+            //trTag.innerHTML = (i+1).toString()+'.'+Data[i].TASK_BRCH;
+
+            //분류 태그 생성
+            /*
+            let taskTag = document.createElement('div');
+            taskTag.setAttribute('id',Data[i].TASK_BRCH);
+            taskTag.setAttribute('class','taskTag');
+            taskTag.innerHTML = (i+1).toString()+'.'+Data[i].TASK_BRCH;
+            */
             
             let taskTdTag = document.createElement('td');
             taskTdTag.setAttribute('id', Data[i].TASK_BRCH);
@@ -155,7 +165,11 @@
                 let tbody_trTag    = document.createElement('tr');
                 tbody_trTag.setAttribute('id','tbody_trTag'+Data[i].ITEM_INFO[j].ITEM_NM);
                 tbody_trTag.setAttribute('class','tbody_trTag');    
-                
+                /*
+                let tbody_tdTag    = document.createElement('td');
+                tbody_tdTag.setAttribute('id','tbody_tdTag'+Data[i].ITEM_INFO[j].ITEM_NM);
+                tbody_tdTag.setAttribute('class','tbody_tdTag');    
+                */
                 /**
                  * <tbody>
                  *  <tr>
@@ -176,14 +190,14 @@
                 let td_conTag = document.createElement('td');
                 td_conTag.setAttribute('id','td_conTag'+Data[i].ITEM_INFO[j].ITEM_NM+Data[i].ITEM_INFO[j].CON_TYPE);
                 td_conTag.setAttribute('class','td_conTag');
-                td_conTag.setAttribute('style','border-left : 0px;border-right : 0px; border-bottom : 0px');
+                //td_conTag.setAttribute('style','border : 0px;');
                 //td_conTag.innerHTML = Data[i].ITEM_INFO[j].CON_TYPE;
                 tbody_trTag.appendChild(td_conTag);
                 
                 let td_More = document.createElement('td');
                 td_More.setAttribute('id','td_More'+Data[i].ITEM_INFO[j].ITEM_NM);
                 td_More.setAttribute('class','td_More');
-                td_More.setAttribute('style','border-left : 0px;border-right : 0px; border-bottom : 0px');
+                //td_More.setAttribute('style','border : 0px;');
                 // td_More.setAttribute('class','dx-icon dx-icon-search');
                 tbody_trTag.appendChild(td_More);
                 
@@ -198,13 +212,13 @@
                         //conTag.setAttribute('maxlength','10');
                         conTag.setAttribute('id', 'text');
                         conTag.setAttribute('class','td_text');
-                        conTag.setAttribute('style','width : 90% ; height : 20px');
+                        conTag.setAttribute('style','width : 100% ; height : 20px ; margin : 1px 1px 1px 1px; background-color: #ffffff; color: #333; border-width: 1px; border-style: solid;  border-radius: 0; border-color: #ddd; vertical-align: super;');
                         break;
                     case '002': //combobox
                         conTag = document.createElement('select');
                         conTag.setAttribute('id', 'combobox');    
                         conTag.setAttribute('class','td_combobox');
-                        conTag.setAttribute('style','width : 90% ; height : 25px');
+                        conTag.setAttribute('style','width : 100% ; height : 25px ; margin : 1px 1px 1px 1px; font-family:Malgun gothic; border-radius:5px; border-width:2px; border-color:#f0f2f4 ');
                         Data[i].ITEM_INFO[j].CODE_LIST = '%,'+Data[i].ITEM_INFO[j].CODE_LIST
                         Data[i].ITEM_INFO[j].VALUE_LIST = '선택,'+Data[i].ITEM_INFO[j].VALUE_LIST
                         var codeArr = Data[i].ITEM_INFO[j].CODE_LIST.split(',');
@@ -230,16 +244,18 @@
                         conTag = document.createElement('div');
                         conTag.setAttribute('id', 'checkgroup');
                         conTag.setAttribute('class','td_checkgroup');
-                        conTag.setAttribute('style','width : 100% ; height : 25px');
+                        conTag.setAttribute('style','width : 100% ; height : 25px ; margin : 1px 1px 1px 1px;');
                         for(var t = 0 ; t < codeArr.length ; t++){
                             let checkTag = document.createElement('input');
                             checkTag.setAttribute('type','checkbox');
                             checkTag.setAttribute('name','checkGroup'+Data[i].ITEM_INFO[j].ITEM_NM); 
                             checkTag.setAttribute('id',codeArr[t]);
                             checkTag.setAttribute('value',codeArr[t]);
+                            checkTag.setAttribute('style','cursor: pointer; user-select: none; width:17px; heigth:17px; border:#cbcbcb; border-radius:4px;')
                             
                             let labelTag = document.createElement('label');
                             labelTag.setAttribute('for',codeArr[t]);
+                            //labelTag.setAttribute('style','width:17px,heigth:17px;border:2px solid #cbcbcb;border-radius:4px;');
                             labelTag.innerHTML = valArr[t] ;   
         
                             conTag.append(checkTag);
@@ -258,7 +274,7 @@
                         conTag = document.createElement('div');
                         conTag.setAttribute('id', 'radiogroup');
                         conTag.setAttribute('class','td_radiogroup');
-                        conTag.setAttribute('style','width : 100% ; height : 25px');
+                        conTag.setAttribute('style','width : 100% ; height : 25px ; margin : 1px 1px 1px 1px');
                         for(var t = 0 ; t < codeArr.length ; t++){
                             let radioTag = document.createElement('input');
                             radioTag.setAttribute('type','radio');
@@ -715,7 +731,7 @@
         var codeData = '';
         var xmlData  = '<List>';
         var htmlData = 'IF(';  
-
+        
         for(var i = 0 ; i < ruleObj.length ; i++){
             var tempCode = '';
             var tempXml = '';
@@ -733,22 +749,37 @@
             
             if(ruleObj[i].type === 'STRING'){
                    if(ruleObj[i].val.split(',').length > 1){ //복수개 
-                       tempCode = 'if((obzFunction.operatorIN('+ruleObj[i].item +'),'+ ruleObj[i].item +'_PMPT))';
+                       var mulitVal =  ruleObj[i].val.split(',');
+                       tempCode = "if("
+                       for(var m = 0 ; m < mulitVal.length ; m++){
+                            tempCode += "( \\\""+ ruleObj[i].item +"\\\".compareTo(\\\""+mulitVal[m]+"\\\") == 0) ||"                                 
+                       }
+                       tempCode = tempCode.substring(0,tempCode.length-2); //&& 제거
+
+                       //tempCode = "if((obzFunction.operatorIN(\\\""+ruleObj[i].item +"\\\"),\\\""+ ruleObj[i].item +"_PMPT\\\"))";
+
                        tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"),  get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
                        tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
                    }else{                
-                       tempCode = 'if(('+ ruleObj[i].item +'.compareTo('+ruleObj[i].item+'_PMPT) == 0)';
+                       tempCode = "if((\\\""+ ruleObj[i].item +"\\\".compareTo(\\\""+ruleObj[i].item+"_PMPT\\\") == 0)";
                        tempXml += "<value><![CDATA[((get(\""+ruleObj[i].item+"\").compareTo(get(\""+ruleObj[i].item+"_PMPT\"))) == 0)]]></value>";
                        tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
                    }
                }else{//NUMERIC
                    if(ruleObj[i].val.split(',').length > 1){ //복수개
-                       tempCode = 'if((obzFunction.operatorIN('+ ruleObj[i].item + ', '+ ruleObj[i].item +'_PMPT))';
-                       tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"), get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
+                        var mulitVal =  ruleObj[i].val.split(',');
+                        tempCode = "if("
+                        for(var m = 0 ; m < mulitVal.length ; m++){
+                            tempCode += "(Double.parseDouble( \\\""+ ruleObj[i].item +"\\\") == Double.parseDouble(\\\""+mulitVal+"\\\") ) ||"                                 
+                        }
+                        tempCode = tempCode.substring(0,tempCode.length-2); //&& 제거
+                       //tempCode = "if(obzFunction.operatorIN(\\\"'+ ruleObj[i].item + '\\\", \\\"'+ ruleObj[i].item +'_PMPT\\\"))";
+            
+                       tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\\\""+ruleObj[i].item+"\\\"), get(\\\""+ruleObj[i].item+"_PMPT\\\")))]]></value>";
                        tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
                    }else{
-                       tempCode = "if(("+ ruleObj[i].item + ".equals(\"\") ) set("+ ruleObj[i].item + "_PMPT, \"0\");"  
-                                + "if((Double.parseDouble(" + ruleObj[i].item + "_PMPT) == (Double.parseDouble("+ruleObj[i].item+"_PMPT))";
+                       //tempCode = "if((\\\""+ ruleObj[i].item + "\\\".equals(\\\"\\\") ) set(\\\""+ ruleObj[i].item + "_PMPT\\\", \\\"0\\\");"  
+                       tempCode = "if(Double.parseDouble(\\\"" + ruleObj[i].item + "\\\") == (Double.parseDouble(\\\""+ruleObj[i].item+"_PMPT\\\"))";
                        tempXml  += "<value><![CDATA[(Double.parseDouble(get(\""+ruleObj[i].item+"\")) == (Double.parseDouble(get(\""+ruleObj[i].item+"_PMPT\"))))]]></value>";
                        tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
                    }
@@ -776,7 +807,7 @@
                     tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
                 }
             }*/
-            codeData += tempCode + '){}else{return false;}';
+            codeData += tempCode + '){return true;}else{return false;}';
             xmlData  += tempXml + "</Condition></LogicOperator><RuleThen></RuleThen><Desc><![CDATA[]]></Desc></EasySheet>";
             htmlData += tempHtml 
 
@@ -801,19 +832,26 @@
 
         jexlCode += " JexlEngine jexl = new JexlEngine(); "
                   + " String jexlExp = codeMap.get(entry.getKey()); "
-                  //+ " __wlog.info_println(\"jexelEXP::::::::::::::::::::::::::\" + jexlExp); "
-                  + " System.out.println(\"jexelEXP::::::::::::::::::::::::::\" + jexlExp); "
+                  + " String param = entry.getKey(); "
+                  + " String param_pmpt = entry.getKey()+\"_PMPT\"; "
+                  + " System.out.println(\" before  jexelEXP::::::::::::::::::::::::::\" + jexlExp); "
+                  + " jexlExp = jexlExp.replace(param_pmpt, get(param_pmpt)); "
+                  + " jexlExp = jexlExp.replaceAll(param, get(param)); "
+                  + " System.out.println(\" item value ::::: \" + get(param) + \" item value2  \" + get(param_pmpt) ); "
+                  + " System.out.println(\" replace jexelEXP::::::::::::::::::::::::::\" + jexlExp); "
                   + " Expression e = jexl.createExpression( jexlExp ); "
                   + " JexlContext jc = new MapContext(); "
-                  + " String param = entry.getKey(); "
-                  + " String param_pmpt = entry.getKey()+\"_PMPT\";"
-                  + " String data1 = get(param);"
-                  + " String data2 = get(param_pmpt);"
-                  + " jc.set(param, data1); "
-                  + " jc.set(param_pmpt, data2); "
-                  + " if((Boolean)e.evaluate(jc) == false){ System.out.println(\"@@@@@@@@@@@@@@@@@@false\"); return false;}else{ System.out.println(\"@@@@@@@@@@@@@@@@@@@@@true\"); return true; } "
-                  //+ " if((Boolean)e.evaluate(jc) == false){return false; }else{ } "
-                  +  "  } ";
+                  + " jc.set(\"Double\", java.lang.Double.class ); "
+                  + " if((Boolean)e.evaluate(jc) == false){        "
+                  + "      System.out.println(param+\"@@@@@@@@@@@@@@@@@@false\"); "
+                  + "      set(\"__STOP_NODEITEM__\", param ); "
+                  + "      set(\"__STOP_NODEITEM__\", \"왜안나와\" ); "
+                  + "      System.out.println(\"STOP_NODE_ITEM#################\"+get(\"__STOP_NODEITEM__\")); "
+                  + "      return false;}                                   "
+                  + " else{ System.out.println(\"@@@@@@@@@@@@@@@@@@@@@true\"); "
+                  + "      set(\"__STOP_NODEITEM__\", \"왜안나와2\" ); "
+                  + " } "
+                  + " } ";//end while
 
         console.log(jexlCode);
 
