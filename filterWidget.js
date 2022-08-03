@@ -244,15 +244,33 @@
                 let moreButton;
 
                 let conTag;
+                let conTag2; //Between 컨트롤일 경우 사용 
+
                 switch(Data[i].ITEM_INFO[j].CON_TYPE){
-                    case '001': //text
+                    case '001'://text
+                    case '006'://greaterEqual
+                    case '007'://lessEqual
+                    case '008'://greater
+                    case '009'://less
                         conTag = document.createElement('input');
                         conTag.setAttribute('type','text');
                         conTag.setAttribute('autocomplete','off');
                         //conTag.setAttribute('maxlength','10');
-                        conTag.setAttribute('id', 'text'+Data[i].ITEM_INFO[j].ITEM_ID);
-                        conTag.setAttribute('class','td_text');
-                        conTag.setAttribute('style','width : 98.5% ; height : 20px ; margin : 1px 1px 1px 1px; background-color: #ffffff; color: #333; border-width: 1px; border-style: solid;  border-radius: 0; border-color: #ddd; vertical-align: super; ');
+                        var conType = '';
+                        if(Data[i].ITEM_INFO[j].CON_TYPE === '001'){
+                            conType = 'text';
+                        }else if(Data[i].ITEM_INFO[j].CON_TYPE === '006'){
+                            conType = 'greaterEqual';
+                        }else if(Data[i].ITEM_INFO[j].CON_TYPE === '007'){
+                            conType = 'lessEqual';
+                        }else if(Data[i].ITEM_INFO[j].CON_TYPE === '008'){
+                            conType = 'greater';
+                        }else if(Data[i].ITEM_INFO[j].CON_TYPE === '009'){
+                            conType = 'less';                
+                        }
+                        conTag.setAttribute('id', conType+Data[i].ITEM_INFO[j].ITEM_ID);
+                        conTag.setAttribute('class','td_'+conType);
+                        conTag.setAttribute('style','width : 97.5% ; height : 20px ; margin : 1px 1px 1px 1px; background-color: #ffffff; color: #333; border-width: 1px; border-style: solid;  border-radius: 0; border-color: #ddd; vertical-align: super; ');
                         break;
                     case '002': //combobox
                         
@@ -414,13 +432,23 @@
                             conTag.style.height = 'auto';
                         }
                         break;
-                    case '005': //between
+                    case '005': //between  2022.07.27 추가
                         conTag = document.createElement('input');
-                        conTag.setAttribute('id', 'between');
-                        conTag.setAttribute('class','td_between');
                         conTag.setAttribute('type','text');
+                        conTag.setAttribute('autocomplete','off');
                         conTag.setAttribute('maxlength','10');
-                        conTag.setAttribute('style','width : 90% ; height : 25px');
+                        conTag.setAttribute('id', 'text'+Data[i].ITEM_INFO[j].ITEM_ID);
+                        conTag.setAttribute('class','td_between');
+                        conTag.setAttribute('style','width : 45% ; left : 0px ; rigtht : 53% ; height : 20px ; margin : 1px 1px 1px 1px; background-color: #ffffff; color: #333; border-width: 1px; border-style: solid;  border-radius: 0; border-color: #ddd; vertical-align: super; ');
+                        
+                        conTag2 = document.createElement('input');
+                        conTag2.setAttribute('type','text');
+                        conTag2.setAttribute('autocomplete','off');
+                        conTag2.setAttribute('maxlength','10');
+                        conTag2.setAttribute('id', 'text'+Data[i].ITEM_INFO[j].ITEM_ID+'_2');
+                        conTag2.setAttribute('class','td_between');
+                        conTag2.setAttribute('style','width : 45% ; left : 53% ; rigtht : 0px ; height : 20px ; margin : 1px 1px 1px 1px; background-color: #ffffff; color: #333; border-width: 1px; border-style: solid;  border-radius: 0; border-color: #ddd; vertical-align: super; ');
+                        
                         break;
 
                 }
@@ -434,8 +462,17 @@
                         obz.openDialogNew(instance, '', obz.getFrameURL('/managebaseserver/webframes/jcomponent/design/codesearch'), 'setCodeSearchData', false);
                     };
                 }
-                
                 td_conTag.appendChild(conTag);
+
+                //2022.07.27 Between인 경우 Input 두개 있어야 함.
+                if(conTag2 !== '' && conTag2 !== null && conTag2 !== undefined){
+                    let waveLabel = document.createElement('label');
+                    waveLabel.innerHTML = ' ~ '; 
+                    waveLabel.setAttribute('class','label');
+                    waveLabel.setAttribute('style','vertical-align: super; ');
+                    td_conTag.appendChild(waveLabel);
+                    td_conTag.appendChild(conTag2);
+                }
 
             }   
         }//end for
@@ -472,12 +509,17 @@
             
             var data = new Object(); 
             //타입 세팅(STRING,NUMERIC)
-            data.type = itemTypeArr[i];
-            data.id   = itemIdArr[i];
-
+            data.type     = itemTypeArr[i];
+            data.id       = itemIdArr[i];
             var tagId = $('.td_conTag')[i].id;
+            data.operator = tagId.substring(tagId.length,tagId.length-3);
+
             switch(tagId.substring(tagId.length,tagId.length-3)){
                 case '001'://text
+                case '006'://greaterEqual(>=)
+                case '007'://lessEqual(<=)
+                case '008'://greater(>)
+                case '009'://less(<)
                     conTagVal.push($('.td_conTag')[i].children[0].value);
                     
                     if($('.td_conTag')[i].children[0].value !== ''){
@@ -551,10 +593,23 @@
                     conTagVal.push(checkVal);
                     break;
                 case '005'://between
-                    conTagVal.push($('.td_conTag')[i].children[0].value);
-                    if($('.td_conTag')[i].children[0].value !== ''){
+                    //첫번째 아이템만 존재할때
+                    if($('.td_conTag')[i].children[0].value !== '' && $('.td_conTag')[i].children[2].value === ''){
                         data.item = itemArr[i];
-                        data.val  = $('.td_conTag')[i].children[0].value;
+                        data.val  = $('.td_conTag')[i].children[0].value;  //Between 첫번째 값
+                        data.val2  = ''; //Between 두번째 값
+                        selDataList.push(data);
+                    //두번째 아이템만 존재할때
+                    }else if($('.td_conTag')[i].children[0].value === '' && $('.td_conTag')[i].children[2].value !== ''){
+                        data.item = itemArr[i];
+                        data.val  = '';  //Between 첫번째 값
+                        data.val2  = $('.td_conTag')[i].children[2].value; //Between 두번째 값
+                        selDataList.push(data);
+                    //둘다 존재하는 경우
+                    }else  if($('.td_conTag')[i].children[0].value !== '' && $('.td_conTag')[i].children[0].value !== ''){
+                        data.item = itemArr[i];
+                        data.val  = $('.td_conTag')[i].children[0].value;  //Between 첫번째 값
+                        data.val2  = $('.td_conTag')[i].children[2].value; //Between 두번째 값
                         selDataList.push(data);
                     }
                     break;
@@ -666,7 +721,10 @@
              var tagId = $('.td_conTag')[i].id;
              switch(tagId.substring(tagId.length,tagId.length-3)){
                  case '001'://text
-
+                 case '006':
+                 case '007':
+                 case '008':
+                 case '009':  
                      if($('.td_conTag')[i].children[0].value !== ''){
                          $('#'+$('.td_conTag')[i].children[0].id).val('');
                      }
@@ -704,8 +762,12 @@
                  case '005'://between
     
                      if($('.td_conTag')[i].children[0].value !== ''){
-                      
+                        $('#'+$('.td_conTag')[i].children[0].id).val('');
                      }
+                     if($('.td_conTag')[i].children[2].value !== ''){
+                        $('#'+$('.td_conTag')[i].children[2].id).val('');
+                     }
+
                      break;
              }
          }
@@ -719,7 +781,7 @@
         }
     }
     //수정버튼 클릭시 이벤트 
-    this.editFilter = function(ruleId, code){
+    this.editFilter = function(ruleId, code, operator){
          
         //console.log("수정할 항목 ruleid : " + ruleId + "/code 값 : "+ code);
 
@@ -734,6 +796,10 @@
             var tagId = $('.td_conTag')[i].id;
             switch(tagId.substring(tagId.length,tagId.length-3)){
                 case '001'://text
+                case '006':
+                case '007':    
+                case '008':
+                case '009':    
                     if(ruleId === conTagArr[i].firstChild.id.substr(4,conTagArr[i].length)){    
                         $('#'+$('.tbody_trTag')[i].id).css('pointer-events','');
                         $('#'+$('.tbody_trTag')[i].id + ' > *').css('opacity','');
@@ -784,9 +850,23 @@
                     
                     break;
                 case '005'://between
-                    if($('.td_conTag')[i].children[0].value !== ''){
-                     
-                    }
+                    var codeArr = code.split(',');
+                    
+                    if(ruleId === conTagArr[i].firstChild.id.substr(4,conTagArr[i].length)){    
+                        $('#'+$('.tbody_trTag')[i].id).css('pointer-events','');
+                        $('#'+$('.tbody_trTag')[i].id + ' > *').css('opacity','');
+                        
+                        //부등호로 넘어오는 경우에는 코드값 배열 인덱스가 하나 밖에 없음
+                        if(operator==='>='){
+                            $('#'+$('.td_conTag')[i].children[0].id).val(codeArr[0]);
+                        }else if(operator==='<='){
+                            $('#'+$('.td_conTag')[i].children[0].id+'_2').val(codeArr[0]);
+                        }else{//BETWEEN 
+                            $('#'+$('.td_conTag')[i].children[0].id).val(codeArr[0]);
+                            $('#'+$('.td_conTag')[i].children[0].id+'_2').val(codeArr[1]);
+                        }
+
+                    }   
                     break;
             }
         }
@@ -839,8 +919,8 @@
                     */
                     tempCode = '(obzFunction.operatorIN(get(\"'+ ruleObj[i].item + '\"), get(\"'+ ruleObj[i].item +'_PMPT\")))';
                     tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"), get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
-                    //tempCode = '(Double.parseDouble(get(\"' + ruleObj[i].item + '\")) == ('+ruleObj[i].val+'d))';
                     tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
+      
                 }else{
                     tempCode = "if(get\""+ ruleObj[i].item + "\").equals(\"\") set(\""+ ruleObj[i].item + "_PMPT\", \"0\");"  
                              + "(Double.parseDouble(get(\"" + ruleObj[i].item + "_PMPT\")) == (Double.parseDouble(get\""+ruleObj[i].item+"_PMPT\"))))";
@@ -1018,12 +1098,78 @@
                        tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"),  get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
                        tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
                    }else{                
-                       tempCode = "if((\\\""+ ruleObj[i].item +"\\\".compareTo(\\\""+ruleObj[i].item+"_PMPT\\\") == 0)";
-                       tempXml += "<value><![CDATA[((get(\""+ruleObj[i].item+"\").compareTo(get(\""+ruleObj[i].item+"_PMPT\"))) == 0)]]></value>";
-                       tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
+
+                       switch(ruleObj[i].operator){
+                            case '<=':
+                                if((ruleObj[i].val === ''|| ruleObj[i].val === undefined)&&(ruleObj[i].val2 !== ''|| ruleObj[i].val2 !== undefined)){ //첫번째 아이템 없고 두번째 아이템 존재  -> 아이템 >= 값1        
+                                    tempCode = "if(\\\"" + ruleObj[i].item + "\\\" <= \\\""+ruleObj[i].item+"_PMPT2\\\"";
+                                    tempXml  += "<value><![CDATA[(get(\""+ruleObj[i].item+"\") get(\""+ruleObj[i].item+"_PMPT2\"))]]></value>";
+                                    tempHtml = "{"+ ruleObj[i].item + "} &lt;= " + ruleObj[i].item + "_PMPT2 <br> AND";     
+                                
+                                }else if((ruleObj[i].val !== '' || ruleObj[i].val !== undefined)&&(ruleObj[i].val2 === '' || ruleObj[i].val2 === undefined)){//첫번째 아이템 존재 두번째 아이템 없음  -> 아이템 <= 값2
+                                    tempCode = "if(\\\"" + ruleObj[i].item + "\\\" <= \\\""+ruleObj[i].item+"_PMPT\\\"";
+                                    tempXml  += "<value><![CDATA[(\""+ruleObj[i].item+"\" <= \""+ruleObj[i].item+"_PMPT\")]]></value>";
+                                    tempHtml = "{"+ ruleObj[i].item + "} &lt;= " + ruleObj[i].item + "_PMPT <br> AND";          
+                                }
+                                break;
+                            case '>=':
+                                if((ruleObj[i].val === ''|| ruleObj[i].val === undefined)&&(ruleObj[i].val2 !== ''|| ruleObj[i].val2 !== undefined)){ //첫번째 아이템 없고 두번째 아이템 존재  -> 아이템 >= 값1        
+                                    tempCode = "if(\\\"" + ruleObj[i].item + "\\\" >= \\\""+ruleObj[i].item+"_PMPT2\\\" ";
+                                    tempXml  += "<value><![CDATA[(\""+ruleObj[i].item+"\" >= \""+ruleObj[i].item+"_PMPT2\")]]></value>";
+                                    tempHtml = "{"+ ruleObj[i].item + "} &gt;= " + ruleObj[i].item + "_PMPT2 <br> AND";     
+                                
+                                }else if((ruleObj[i].val !== '' || ruleObj[i].val !== undefined)&&(ruleObj[i].val2 === '' || ruleObj[i].val2 === undefined)){//첫번째 아이템 존재 두번째 아이템 없음  -> 아이템 <= 값2
+                                    tempCode = "if(\\\"" + ruleObj[i].item + "\\\" >= \\\""+ruleObj[i].item+"_PMPT\\\" ";
+                                    tempXml  += "<value><![CDATA[(\""+ruleObj[i].item+"\" >= \""+ruleObj[i].item+"_PMPT\")]]></value>";
+                                    tempHtml = "{"+ ruleObj[i].item + "} &gt;= " + ruleObj[i].item + "_PMPT <br> AND";          
+                                }
+                                break;
+                            case '<':
+                                tempCode = "if( \\\""+ ruleObj[i].item +"\\\" < \\\""+ruleObj[i].item+"_PMPT\\\" ";
+                                tempXml += "<value><![CDATA[(get(\""+ruleObj[i].item+"\") < get(\""+ruleObj[i].item+"_PMPT\"))]]></value>";
+                                tempHtml = "{"+ ruleObj[i].item + "} &lt; " + ruleObj[i].item + "_PMPT <br> AND";
+                                break;
+                            case '>':
+                                tempCode = "if( \\\""+ ruleObj[i].item +"\\\" > \\\""+ruleObj[i].item+"_PMPT\\\" ";
+                                tempXml += "<value><![CDATA[(get(\""+ruleObj[i].item+"\") > get(\""+ruleObj[i].item+"_PMPT\"))]]></value>";
+                                tempHtml = "{"+ ruleObj[i].item + "} &gt; " + ruleObj[i].item + "_PMPT <br> AND";
+                                break;
+                            case 'BETWEEN':
+                                if((ruleObj[i].val === ''|| ruleObj[i].val === undefined)&&(ruleObj[i].val2 !== ''|| ruleObj[i].val2 !== undefined)){ //첫번째 아이템 없고 두번째 아이템 존재  -> 아이템 >= 값1        
+                                    
+                                    tempCode = "if( \\\""+ ruleObj[i].item +"\\\" <= \\\""+ruleObj[i].item+"_PMPT2\\\" ";
+                                    tempXml += "<value><![CDATA[(get(\""+ruleObj[i].item+"\") <= get(\""+ruleObj[i].item+"_PMPT2\"))]]></value>";
+                                    tempHtml = "{"+ ruleObj[i].item + "} &lt;= " + ruleObj[i].item + "_PMPT2 <br> AND";     
+
+                                }else if((ruleObj[i].val !== '' || ruleObj[i].val !== undefined)&&(ruleObj[i].val2 === '' || ruleObj[i].val2 === undefined)){//첫번째 아이템 존재 두번째 아이템 없음  -> 아이템 <= 값2
+                                    
+                                    tempCode = "if( \\\""+ ruleObj[i].item +"\\\" >= \\\""+ruleObj[i].item+"_PMPT2\\\" ";
+                                    tempXml += "<value><![CDATA[(get(\""+ruleObj[i].item+"\") >= get(\""+ruleObj[i].item+"_PMPT2\"))]]></value>";
+                                    tempHtml = "{"+ ruleObj[i].item + "} &gt;= " + ruleObj[i].item + "_PMPT2 <br> AND";   
+                                
+                                }else{                                                    //둘다 존재   -> 값1 <= 아이템 <= 값2
+    
+                                    tempCode = "if((\\\""+ ruleObj[i].item +"\\\" >= \\\""+ruleObj[i].item+"_PMPT\\\") && (\\\""+ ruleObj[i].item +"\\\" <= \\\""+ruleObj[i].item+"_PMPT2\\\")";
+                                    tempXml += "<value><![CDATA[((get(\""+ruleObj[i].item+"\") >= get(\""+ruleObj[i].item+"_PMPT\")) && (get(\""+ruleObj[i].item+"\") <= get(\""+ruleObj[i].item+"_PMPT2\")))]]></value>";
+                                    tempHtml = "{"+ ruleObj[i].item + "} BETWEEN " + ruleObj[i].item + "_PMPT" + " AND " + ruleObj[i].item + "_PMPT2 <br> AND";    
+    
+                                }
+                                break;
+                            case '<>':
+                                break;
+                            case 'NOT IN':        
+                                break;
+                            default:   //IN, = 
+                                tempCode = "if((\\\""+ ruleObj[i].item +"\\\".compareTo(\\\""+ruleObj[i].item+"_PMPT\\\") == 0)";
+                                tempXml += "<value><![CDATA[((get(\""+ruleObj[i].item+"\").compareTo(get(\""+ruleObj[i].item+"_PMPT\"))) == 0)]]></value>";
+                                tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
+                                break;
+                        }     
+
                    }
                }else{//NUMERIC
                    if(ruleObj[i].val.split(',').length > 1){ //복수개
+
                         var mulitVal =  ruleObj[i].val.split(',');
                         tempCode = "if("
                         for(var m = 0 ; m < mulitVal.length ; m++){
@@ -1035,213 +1181,15 @@
                        tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\\\""+ruleObj[i].item+"\\\"), get(\\\""+ruleObj[i].item+"_PMPT\\\")))]]></value>";
                        tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
                    }else{
-                       //tempCode = "if((\\\""+ ruleObj[i].item + "\\\".equals(\\\"\\\") ) set(\\\""+ ruleObj[i].item + "_PMPT\\\", \\\"0\\\");"  
-                       tempCode = "if(Double.parseDouble(\\\"" + ruleObj[i].item + "\\\") == (Double.parseDouble(\\\""+ruleObj[i].item+"_PMPT\\\"))";
-                       tempXml  += "<value><![CDATA[(Double.parseDouble(get(\""+ruleObj[i].item+"\")) == (Double.parseDouble(get(\""+ruleObj[i].item+"_PMPT\"))))]]></value>";
-                       tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
-                   }
-            }
-            /*
-            if(ruleObj[i].type === 'STRING'){
-                if(ruleObj[i].val.split(',').length > 1){ //복수개 
-                    tempCode = 'if((obzFunction.operatorIN(get(\"'+ruleObj[i].item +'\")), get(\"'+ ruleObj[i].item +'_PMPT\")))';
-                    tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"),  get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
-                    tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
-                }else{                
-                    tempCode = 'if((get(\\\"'+ ruleObj[i].item +'\\\").compareTo(get(\\\"'+ruleObj[i].item+'_PMPT\\\")) == 0)';
-                    tempXml += "<value><![CDATA[((get(\""+ruleObj[i].item+"\").compareTo(get(\""+ruleObj[i].item+"_PMPT\"))) == 0)]]></value>";
-                    tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
-                }
-            }else{//NUMERIC
-                if(ruleObj[i].val.split(',').length > 1){ //복수개
-                    tempCode = 'if((obzFunction.operatorIN(get(\"'+ ruleObj[i].item + '\"), get(\"'+ ruleObj[i].item +'_PMPT\")))';
-                    tempXml += "<value><![CDATA[(obzFunction.operatorIN(get(\""+ruleObj[i].item+"\"), get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
-                    tempHtml = "{"+ ruleObj[i].item + "} IN (" + ruleObj[i].item + "_PMPT) <br> AND";
-                }else{
-                    tempCode = "if((get(\""+ ruleObj[i].item + "\").equals(\"\") ) set("+ ruleObj[i].item + "_PMPT, \"0\");"  
-                             + "if((Double.parseDouble(get(\"" + ruleObj[i].item + "\")) == (Double.parseDouble(get(\""+ruleObj[i].item+"_PMPT\")))";
-                    tempXml  += "<value><![CDATA[(Double.parseDouble(get(\""+ruleObj[i].item+"\")) == (Double.parseDouble(get(\""+ruleObj[i].item+"_PMPT\"))))]]></value>";
-                    tempHtml = "{"+ ruleObj[i].item + "} = " + ruleObj[i].item + "_PMPT <br> AND";
-                }
-            }*/
-            codeData += tempCode + '){return true;}else{return false;}';
-            xmlData  += tempXml + "</Condition></LogicOperator><RuleThen></RuleThen><Desc><![CDATA[]]></Desc></EasySheet>";
-            htmlData += tempHtml 
-
-            /*
-            jexlCode += " String tempCode = \""+ codeData + "\";";
-            jexlCode += " tempCode = tempCode.replaceFirst(\""+ ruleObj[i].item +"\", \"get(\""+ ruleObj[i].item +"\")\" );";
-            jexlCode += " tempCode = tempCode.replace(\""+ ruleObj[i].item +"_PMPT\", \"get(\""+ ruleObj[i].item +"_PMPT\")\" );";                
-            jexlCode += " codeMap.put(\""+ruleObj[i].item+"\", tempCode); ";
-            */
-            
-            jexlCode += " tempCode = \""+codeData+"\"; ";
-            //var temp = "true";
-            //jexlCode += " tempCode = \""+temp+"\"; ";
-            jexlCode += " codeMap.put(\""+ruleObj[i].item+"\",tempCode); ";
-        }
-
-        jexlCode += " Iterator it = codeMap.entrySet().iterator(); "
-                 +  " while(it.hasNext()){"
-                 +  " Map.Entry<String, String> entry = (Map.Entry)it.next(); "
-                 //+  " //entry.getKey() , entry.getValue() " 
-                 
-
-        jexlCode += " JexlEngine jexl = new JexlEngine(); "
-                  + " String jexlExp = codeMap.get(entry.getKey()); "
-                  + " String param = entry.getKey(); "
-                  + " String param_pmpt = entry.getKey()+\"_PMPT\"; "
-                  + " String stop_node_item = \"\"; "   ////////////////////////////////////////////////////////////////////////////2022.04.26
-                  //+ " System.out.println(\" before  jexelEXP::::::::::::::::::::::::::\" + jexlExp); "
-                  + " jexlExp = jexlExp.replace(param_pmpt, get(param_pmpt)); "
-                  + " jexlExp = jexlExp.replaceAll(param, get(param)); "
-                //   + " System.out.println(\" item value ::::: \" + get(param) + \" item value2  \" + get(param_pmpt) ); "
-                //   + " System.out.println(\" replace jexelEXP::::::::::::::::::::::::::\" + jexlExp); "
-                  + " Expression e = jexl.createExpression( jexlExp ); "
-                  + " JexlContext jc = new MapContext(); "
-                  + " jc.set(\"Double\", java.lang.Double.class ); "
-                  + " if((Boolean)e.evaluate(jc) == false){        "
-                  //+ "      System.out.println(param+\"@@@@@@@@@@@@@@@@@@false\"); "
-                  + "      set(\"__STOP_NODEITEM__\", param ); "
-                  //+ "      System.out.println(\"STOP_NODE_ITEM#################\"+get(\"__STOP_NODEITEM__\")); "
-                  + "      return false;}                                   "
-                  + " else{ "
-
-                  + " } "
-                  
-                  + " } ";//end while
-
-        //console.log(jexlCode);
-
-        
-        xmlData += "<EasyInfo actioncnt=\"0\" conditioncnt=\"1\" rowcnt=\""+String(ruleObj.length+1)+"\" Multi=\"S\"  NullExType=\"0\" ISFILTER=\"1\" OPERATOR=\"AND\"/>"
-        xmlData += "<Array><text><![CDATA[]]></text><item><![CDATA[]]></item></Array><GroupInfo><![CDATA[]]></GroupInfo><FormulaInfo><![CDATA[]]></FormulaInfo></List>";
-        
-        htmlData = htmlData.substring(0,htmlData.length-3) + ")";
-        
-
-
-
-        if(type === 'code'){
-            // console.log("code : " + jexlCode);
-            return jexlCode;
-        }else if(type === 'xml'){
-            // console.log("xml : " + xmlData);
-            return xmlData;
-        }else{
-            // console.log("html : " + htmlData);
-            return htmlData;
-        }
-    }
-
-    //DOM 로그 이전 호출하면 에러
-    function showList(){
-        
-        var displayId = document.getElementById(this.id);
-        // console.log('displayId : '+ displayId.innerText);
-        /*
-        if(displayId.style.display=='none'){
-            displayId.style.display = 'block';
-        }else{
-            displayId.style.display = 'none';
-        }*/
-     }
-
-  
-    Object.defineProperty(this, 'Text', {
-        get: function() {
-            //return textArea.getValue();
-        },
-        set: function(val) {
-            //textArea.setValue(val);
-        }
-    });
-
-    Object.defineProperty(this, 'Data', {
-        get: function() {
-            return Data;
-        },
-        set: function(val) {
-            Data = val;
-        }
-    });
-   
-}
-
-function setCodeSearchData(e){
-    console.log('setCodeSearchData');
-    
-    var selectedItem = obz.getPageParam('ITEM');                //돋보기 클릭한 아이템명 
-    var pmpt_ItemArr = obz.getPageParam('ITEM_NM').split(',');   //코드서치 팝업에서 선택된 아이템들의 이름 리스트
-    var pmpt_ValArr  =  obz.getPageParam('ITEM_VAL').split(','); //코드서치 팝업에서 선택된 아이템들의 코드값 
-    
-    if(pmpt_ItemArr.length > 0){
-        
-        var selDataList = new Array();
-
-        //item 리스트 조합 초기화
-        var itemTagArr = $('.itemTag');
-        var itemArr = [];
-        // 사용자 입력 항목 리스트 조합 초기화
-        var conTagArr = $('.td_conTag');
-        var conTagVal = [];
-        //item 리스트 추출
-        for(var i = 0; i < itemTagArr.length ; i++){
-            itemArr.push(itemTagArr[i].innerHTML);
-        }
-        
-        //컨트롤 타입이 무엇인지 text,combo,radio,.. 
-        //$('.td_conTag')[0].id.substring($('.td_conTag')[0].id.length,$('.td_conTag')[0].id.length-3)  
-        for(var i = 0 ; i < conTagArr.length ; i++){
-            
-            //선택 아이템 항목과 해당 조건의 아이템이 맞을때 
-            if(itemArr[i] === selectedItem){
-                var tagId = $('.td_conTag')[i].id;
-                switch(tagId.substring(tagId.length,tagId.length-3)){
-                    case '001'://text
-                        $('.td_conTag')[i].children[0].value  = pmpt_ValArr[0];   
-                        break;
-                    case '002'://combobox
-                        $('.td_conTag')[i].children[0].value  = pmpt_ValArr[0];           
-                        break;    
-                    case '003'://checkgroup
-                        
-                        var checkVal = '';
-                        var parentTagId = $('.td_conTag')[i].id;
-                        var pmpt_check_ValArr = pmpt_ValArr;
-
-                        for(var j = 0 ; j <  $('#'+parentTagId).find('input').length ; j++){
-                            //console.log($('#'+parentTagId).find('input')[j].value);
-                            
-                            for(var h = 0 ; h < pmpt_check_ValArr.length ; h++){
-                                if(pmpt_check_ValArr[h] === $('#'+parentTagId).find('input')[j].value){
-                                    $('#'+parentTagId).find('input')[j].checked = true;
-                                }
-                            }
-                        }
-                        
-                        break;
-                    case '004'://radiogroup
-                        
-                        var checkVal = '';
-                        var parentTagId = $('.td_conTag')[i].id;
-                
-                        for(var j = 0 ; j <  $('#'+parentTagId).find('input').length ; j++){
-                            //console.log($('#'+parentTagId).find('input')[j].value);
-                            
-                            if(pmpt_ValArr[0] === $('#'+parentTagId).find('input')[j].value){
-                                $('#'+parentTagId).find('input')[j].checked = true;
-                            }
-                        }
-                        
-                        break;
-                }      
-            }
-            
-        }    
-
-
-    }else{
-        console.log("설정된 아이템이 없습니다.")
-    }    
-}
+                       /* BETWEEN */ //ex) 값1 ~ 값2   1.값1 만 입력할 경우   아이템 >= 값1 /  2.값2만 입력할 경우 아이템 <= 값2 로 풀리도록 변경
+                       switch(ruleObj[i].operator){
+                            case '<=':
+                                if((ruleObj[i].val === ''|| ruleObj[i].val === undefined)&&(ruleObj[i].val2 !== ''|| ruleObj[i].val2 !== undefined)){ //첫번째 아이템 없고 두번째 아이템 존재  -> 아이템 >= 값1        
+                                    tempCode = "if(Double.parseDouble(\\\"" + ruleObj[i].item + "\\\") <= (Double.parseDouble(\\\""+ruleObj[i].item+"_PMPT2\\\"))";
+                                    tempXml  += "<value><![CDATA[(Double.parseDouble(get(\""+ruleObj[i].item+"\")) <= Double.parseDouble(get(\""+ruleObj[i].item+"_PMPT2\")))]]></value>";
+                                    tempHtml = "{"+ ruleObj[i].item + "} &lt;= " + ruleObj[i].item + "_PMPT2 <br> AND";     
+                                
+                                }else if((ruleObj[i].val !== '' || ruleObj[i].val !== undefined)&&(ruleObj[i].val2 === '' || ruleObj[i].val2 === undefined)){//첫번째 아이템 존재 두번째 아이템 없음  -> 아이템 <= 값2
+                                    tempCode = "if(Double.parseDouble(\\\"" + ruleObj[i].item + "\\\") <= (Double.parseDouble(\\\""+ruleObj[i].item+"_PMPT\\\"))";
+                                    tempXml  += "<value><![CDATA[(Double.parseDouble(get(\""+ruleObj[i].item+"\")) <= Double.parseDouble(get(\""+ruleObj[i].item+"_PMPT\")))]]></value>";
+                                    tempHtml = "{"+ ruleObj[i].item + "} &lt;= " + ruleObj[i].item + "_
